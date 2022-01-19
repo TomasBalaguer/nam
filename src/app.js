@@ -4,13 +4,20 @@ import pkg from "../package.json";
 import messagesRoutes from "./routes/messages.routes";
 import authRoutes from "./routes/auth.routes";
 import userRoutes from "./routes/user.routes";
+import { Server } from 'socket.io'
 
-import { createRoles } from './libs/initialSetup'
+import { createRoles, createGroups } from './libs/initialSetup'
 
 const app = express();
 createRoles();
+createGroups()
 
 app.set('pkg', pkg);
+// const io = new Server(app, {
+//     cors: {
+//         origin: "http://localhost:3000"
+//     }
+// });
 
 app.use(express.json());
 app.use(morgan('dev'));

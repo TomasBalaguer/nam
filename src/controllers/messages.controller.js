@@ -1,7 +1,8 @@
 import Message from './../models/Message'
+import Group from './../models/Group'
 
 export const getMessages = async (req, res) => {
-    const Messages = await Message.find();
+    const Messages = await Message.find().populate('groups');
     res.json(Messages)
 }
 
@@ -12,9 +13,15 @@ export const getMessageById = async (req, res) => {
 }
 
 export const createMessage = async (req, res) => {
-    const { title, message, group } = req.body;
-    const newMessage = new Message({title, message, group});
-
+    const { title, message, groups } = req.body;
+    const newMessage = new Message({title, message, groups});
+    if(groups){
+        const foundGroups = await Group.find({name: {$in: groups}});
+        newMessage.groups = foundGroups.map(group => group._id)
+    }else{
+        const group = await Group.findOne({name: "socio"});
+        newMessage.groups = [group._id]
+    }
     const messageSaved = await newMessage.save()
 
     

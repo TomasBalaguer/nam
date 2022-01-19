@@ -3,7 +3,10 @@ import { Schema, model } from "mongoose";
 const messageSchema = new Schema({
     title: String,
     message: String,
-    group: Array
+    groups: [{
+        ref: "Group",
+        type: Schema.Types.ObjectId
+    }]
 }, {
     timestamps: true,
     versionKey: false

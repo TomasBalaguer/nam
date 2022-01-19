@@ -2,16 +2,17 @@ import User from './../models/User';
 import jwt from "jsonwebtoken";
 import config from './../config'
 import Role from '../models/Role';
+import Group from '../models/Group';
 
 export const signUp = async (req, res) => {
-    const { name, lastname, email, username, password, roles } = req.body;
+    const { name, lastname, email, username, password, roles, groups } = req.body;
     
     const userCheck = await User.find({email});
 
     const newUser = new User({
         name,
         lastname,
-        email,
+        email: email.toLowerCase(),
         username,
         password: await User.encryptPassword(password)
     })
@@ -23,6 +24,14 @@ export const signUp = async (req, res) => {
         const role = await Role.findOne({name: "user"});
         console.log(role)
         newUser.roles = [role._id]
+    }
+    
+    if(groups){
+        const foundGroups = await Group.find({name: {$in: groups}});
+        newUser.groups = foundGroups.map(group => group._id)
+    }else{
+        const group = await Group.findOne({name: "ps"});
+        newUser.groups = [group._id]
     }
 
     const savedUser = await newUser.save();
@@ -37,7 +46,7 @@ export const signUp = async (req, res) => {
 export const signIn = async (req, res) => {
     const { email, password } = req.body;
 
-    const userCheck = await User.findOne({email: email}).populate("roles");
+    const userCheck = await User.findOne({email: email.toLowerCase()}).populate("roles");
     console.log(userCheck);
     if(!userCheck)  return res.status(400).json({message: "User or Password Incorrect"});
 
@@ -49,6 +58,12 @@ export const signIn = async (req, res) => {
         expiresIn: 31556952 // 1 Year
     })
 
-    res.json({token})
+    res.json({token: token, user: userCheck})
 
+}
+
+export const getUser = async (req, res) => {
+    const user = await User.findById(req.userId).populate(['roles', 'groups']);
+
+    res.json({user});
 }

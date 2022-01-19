@@ -8,9 +8,10 @@
 import User from "../models/User"
 
 
-export const verifyDuplicateEmail = (req, res, next) => {
-    const email = User.findOne({email: req.body.email});
-
+export const verifyDuplicateEmail = async (req, res, next) => {
+    console.log(req.body.email);
+    const email = await User.findOne({email: req.body.email});
+    console.log(email)
     if(email) return res.status(400).json({message: "Email already exists!"})
 
     next();
