@@ -1,16 +1,21 @@
-import Message from "./../models/Message";
+import Schedule from "./../models/Schedule";
 import Group from "./../models/Group";
 import User from "./../models/User";
+const { body, validationResult } = require('express-validator');
 
-export const getMessages = async (req, res) => {
+
+export const getEvents = async (req, res) => {
   var groups = await User.findById(req.userId)
     .select("groups")
     .populate("groups");
+
+  const group = await Group.findOne({ name: "socio" });
   groups = groups.groups;
-  const Messages = await Message.find({ groups: { $in: groups } })
-    .sort([["createdAt", -1]])
+  groups.push(group)
+  const Events = await Schedule.find({ groups: { $in: groups } })
+    .sort([["date", -1]])
     .populate(["groups", "user"]);
-  res.json(Messages);
+  res.json(Events);
 };
 
 export const getMessageById = async (req, res) => {
@@ -19,20 +24,24 @@ export const getMessageById = async (req, res) => {
   res.status(200).json(message);
 };
 
-export const createMessage = async (req, res) => {
-  const { title, message, groups } = req.body;
-  const newMessage = new Message({ title, message, groups });
+export const createEvent = async (req, res) => {
+  const { title, description, date, time, type, groups } = req.body;
+  if(!title || !description || !date || !time, !type)
+  {
+    res.status(422).json({message: 'Invalid request'});
+  }
+  const newEvent = new Schedule({ title, description, date, time, type, groups });
   if (groups) {
     const foundGroups = await Group.find({ name: { $in: groups } });
-    newMessage.groups = foundGroups.map((group) => group._id);
+    newEvent.groups = foundGroups.map((group) => group._id);
   } else {
     const group = await Group.findOne({ name: "socio" });
-    newMessage.groups = [group._id];
+    newEvent.groups = [group._id];
   }
-  newMessage.user = req.userId;
-  const messageSaved = await newMessage.save();
-  res.io.emit("message", { message: "Nuevo mensaje" });
-  res.status(201).json(messageSaved);
+  newEvent.user = req.userId;
+  const eventSaved = await newEvent.save();
+  res.io.emit("event", { message: "Nuevo evento" });
+  res.status(201).json(eventSaved);
 };
 
 export const updateMessageById = async (req, res) => {

@@ -5,7 +5,7 @@ import * as messageCtrl from '../controllers/messages.controller';
 
 import { authJwt } from './../middlewares'
 
-router.get('/', messageCtrl.getMessages)
+router.get('/', authJwt.verifyToken, messageCtrl.getMessages)
 
 router.post('/', [authJwt.verifyToken, authJwt.isAdmin || authJwt.isTrainer], messageCtrl.createMessage)
 

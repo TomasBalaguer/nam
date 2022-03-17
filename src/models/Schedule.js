@@ -1,8 +1,11 @@
 import { Schema, model } from "mongoose";
 
-const messageSchema = new Schema({
+const scheduleSchema = new Schema({
     title: String,
-    message: String,
+    description: String,
+    date: String,
+    time: String,
+    type: String,
     user: {
         ref: "User",
         type: Schema.Types.ObjectId
@@ -16,4 +19,4 @@ const messageSchema = new Schema({
     versionKey: false
 })
 
-export default model('Message', messageSchema);
+export default model('Schedule', scheduleSchema);
